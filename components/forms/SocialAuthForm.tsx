@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
+// import {signIn} from '@/auth' (server component)
 import React from "react";
 
 import ROUTES from "@/constants/routes";
@@ -9,13 +10,13 @@ import { Button } from "../ui/button";
 
 const SocialAuthForm = () => {
   const buttonClass =
-    "background-dark400_light900 body-medium text-dark200_light800 min-h-12 flex-1 rounded-2 px-4 py-3.5";
+    "background-dark400_light900 body-medium text-dark200_light800 min-h-12 flex-1 rounded-2 px-4 py-3.5 cursor";
 
   const handleSignIn = async (provider: "github" | "google") => {
     try {
       await signIn(provider, {
         callbackUrl: ROUTES.HOME,
-        redirect: false,
+        // redirect: false,
       });
     } catch (error) {
       console.log(error);
@@ -41,6 +42,17 @@ const SocialAuthForm = () => {
         />{" "}
         <span>Log in with GitHub</span>
       </Button>
+
+      {/* example: render entire form on server without browser needing to touch js code */}
+      {/* <form
+          action={async () => {
+            "use server";
+            await signOut({redirectTo:ROUTES.SIGN_UP});
+          }}
+        >
+          <Button type="submit">Sign Out</Button>
+        </form> */}
+
       <Button className={buttonClass} onClick={() => handleSignIn("google")}>
         <Image
           src="/icons/google.svg"
