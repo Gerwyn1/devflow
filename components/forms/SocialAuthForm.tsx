@@ -43,16 +43,6 @@ const SocialAuthForm = () => {
         <span>Log in with GitHub</span>
       </Button>
 
-      {/* example: render entire form on server without browser needing to touch js code */}
-      {/* <form
-          action={async () => {
-            "use server";
-            await signOut({redirectTo:ROUTES.SIGN_UP});
-          }}
-        >
-          <Button type="submit">Sign Out</Button>
-        </form> */}
-
       <Button className={buttonClass} onClick={() => handleSignIn("google")}>
         <Image
           src="/icons/google.svg"
@@ -67,3 +57,14 @@ const SocialAuthForm = () => {
   );
 };
 export default SocialAuthForm;
+
+{
+  /* <form
+          action={async () => {
+            "use server";
+            await signOut({redirectTo:ROUTES.SIGN_UP});
+          }}
+        >
+          <Button type="submit">Sign Out</Button>
+        </form> */
+}
