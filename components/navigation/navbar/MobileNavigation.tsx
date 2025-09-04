@@ -17,7 +17,7 @@ import NavLinks from "./NavLinks";
 
 const MobileNavigation = async () => {
   const session = await auth();
-  const idOrUser = session?.user?.id ?? session?.user;
+  const userId = session?.user?.id || session?.user;
 
   return (
     <Sheet>
@@ -56,7 +56,7 @@ const MobileNavigation = async () => {
           </SheetClose>
 
           <div className="flex flex-col gap-3">
-            {idOrUser ? (
+            {userId ? (
               // <SheetClose asChild>
               <form
                 action={async () => {
