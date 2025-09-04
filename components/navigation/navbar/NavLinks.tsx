@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 const NavLinks = ({
   isMobileNav = false,
-  userId = '1'
+  userId,
 }: {
   isMobileNav?: boolean;
   userId?: string;
