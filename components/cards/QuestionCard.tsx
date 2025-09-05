@@ -5,6 +5,7 @@ import ROUTES from "@/constants/routes";
 import { getTimeStamp } from "@/lib/utils";
 
 import TagCard from "./TagCard";
+import Metric from "../Metric";
 // import Metric from "../Metric";
 // import EditDeleteAction from "../user/EditDeleteAction";
 
@@ -42,7 +43,7 @@ const QuestionCard = ({
       </div>
 
       <div className="flex-between mt-6 w-full flex-wrap gap-3">
-        {/* <Metric
+        <Metric
           imgUrl={author.image}
           alt={author.name}
           value={author.name}
@@ -51,8 +52,8 @@ const QuestionCard = ({
           textStyles="body-medium text-dark400_light700"
           isAuthor
           titleStyles="max-sm:hidden"
-        /> */}
-        {/* 
+        />
+
         <div className="flex items-center gap-3 max-sm:flex-wrap max-sm:justify-start">
           <Metric
             imgUrl="/icons/like.svg"
@@ -75,7 +76,7 @@ const QuestionCard = ({
             title=" Views"
             textStyles="small-medium text-dark400_light800"
           />
-        </div> */}
+        </div>
       </div>
     </div>
   );
