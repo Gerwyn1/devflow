@@ -16,7 +16,13 @@ import { Input } from "../ui/input";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import TagCard from "../cards/TagCard";
 import { Button } from "../ui/button";
-import { useTransition } from "react";
+import { useRef, useTransition } from "react";
+import { MDXEditorMethods } from "@mdxeditor/editor";
+import dynamic from "next/dynamic";
+
+const Editor = dynamic(() => import("@/components/editor"), {
+  ssr: false,
+});
 
 interface Params {
   question?: Question;
@@ -24,6 +30,7 @@ interface Params {
 }
 
 const QuestionForm = ({ question, isEdit = false }: Params) => {
+  const editorRef = useRef<MDXEditorMethods>(null);
   const [isPending, startTransition] = useTransition();
 
   const form = useForm({
@@ -76,12 +83,11 @@ const QuestionForm = ({ question, isEdit = false }: Params) => {
                 <span className="text-primary-500">*</span>
               </FormLabel>
               <FormControl>
-                Editor
-                {/* <Editor
+                <Editor
                   value={field.value}
                   editorRef={editorRef}
                   fieldChange={field.onChange}
-                /> */}
+                />
               </FormControl>
               <FormDescription className="body-regular mt-2.5 text-light-500">
                 Introduce the problem and expand on what you&apos;ve put in the
@@ -104,7 +110,8 @@ const QuestionForm = ({ question, isEdit = false }: Params) => {
                   <Input
                     className="paragraph-regular background-light700_dark300 light-border-2 text-dark300_light700 no-focus min-h-[56px] border"
                     placeholder="Add tags..."
-                    onKeyDown={(e) => handleInputKeyDown(e, field)}
+                    // onKeyDown={(e) => handleInputKeyDown(e, field)}
+                    onKeyDown={() => {}}
                   />
                   Tags
                   {/* {field.value.length > 0 && (
