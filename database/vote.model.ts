@@ -22,3 +22,6 @@ const VoteSchema = new Schema<IVote>(
 const Vote = models?.Vote || model<IVote>("Vote", VoteSchema);
 
 export default Vote;
+
+// actionId: { type: Schema.Types.ObjectId, refPath: "type", required: true },
+// actionType: { type: String, enum: ["Question", "Answer"], required: true },
