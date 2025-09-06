@@ -18,7 +18,7 @@ export const InteractionActionEnums = [
   "search",
 ] as const;
 
-// export interface IInteractionDoc extends IInteraction, Document {}
+export interface IInteractionDoc extends IInteraction, Document {}
 
 const InteractionSchema = new Schema<IInteraction>(
   {

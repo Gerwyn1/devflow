@@ -7,7 +7,7 @@ export interface IVote {
   voteType: "upvote" | "downvote";
 }
 
-// export interface IVoteDoc extends IVote, Document {}
+export interface IVoteDoc extends IVote, Document {}
 
 const VoteSchema = new Schema<IVote>(
   {
