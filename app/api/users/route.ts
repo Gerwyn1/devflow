@@ -5,7 +5,7 @@ import dbConnect from "@/lib/mongoose";
 import { UserSchema } from "@/lib/validations";
 import { NextResponse } from "next/server";
 
-// Get User
+// Get Users
 export async function GET() {
   try {
     await dbConnect();
