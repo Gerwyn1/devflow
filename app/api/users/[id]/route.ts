@@ -1,6 +1,6 @@
 import User from "@/database/user.model";
 import handleError from "@/lib/handlers/error";
-import { NotFoundError } from "@/lib/http-errors";
+import { NotFoundError, ValidationError } from "@/lib/http-errors";
 import dbConnect from "@/lib/mongoose";
 import { UserSchema } from "@/lib/validations";
 import { NextResponse } from "next/server";
@@ -62,7 +62,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     const body = await request.json();
 
-    const validatedData = UserSchema.partial().parse(body);
+    const validatedData = UserSchema.partial().safeParse(body);
+
+    if (!validatedData.success) {
+      throw new ValidationError(validatedData.error.flatten().fieldErrors);
+    }
 
     const updatedUser = await User.findByIdAndUpdate(id, validatedData, { new: true });
 
@@ -75,3 +79,5 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     return handleError(error, "api") as APIErrorResponse;
   }
 }
+
+// Public endpoints -> /api/v1/...
