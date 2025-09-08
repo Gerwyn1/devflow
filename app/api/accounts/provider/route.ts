@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const { providerAccountId } = await request.json();
   try {
     await dbConnect();
-    const validatedData = AccountSchema.pick({ providerAccountId: true }).safeParse({ providerAccountId });
+    const validatedData = AccountSchema.partial().safeParse({ providerAccountId });
     if (!validatedData.success) {
       throw new ValidationError(validatedData.error.flatten().fieldErrors);
     }
