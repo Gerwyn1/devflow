@@ -4,44 +4,24 @@ import Link from "next/link";
 
 import { auth, signOut } from "@/auth";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import ROUTES from "@/constants/routes";
 
 import NavLinks from "./NavLinks";
 
 const MobileNavigation = async () => {
   const session = await auth();
-  const usernameOrId = session?.user?.name || session?.user?.id;
+  const userId = session?.user?.id;
 
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Image
-          src="/icons/hamburger.svg"
-          width={36}
-          height={36}
-          alt="Menu"
-          className="invert-colors sm:hidden"
-        />
+        <Image src="/icons/hamburger.svg" width={36} height={36} alt="Menu" className="invert-colors sm:hidden" />
       </SheetTrigger>
-      <SheetContent
-        side="left"
-        className="background-light900_dark200 border-none p-5"
-      >
+      <SheetContent side="left" className="background-light900_dark200 border-none p-5">
         <SheetTitle className="hidden">Navigation</SheetTitle>
         <Link href="/" className="flex items-center gap-1">
-          <Image
-            src="/images/site-logo.svg"
-            width={23}
-            height={23}
-            alt="Logo"
-          />
+          <Image src="/images/site-logo.svg" width={23} height={23} alt="Logo" />
 
           <p className="h2-bold font-space-grotesk text-dark-100 dark:text-light-900">
             Dev<span className="text-primary-500">Flow</span>
@@ -56,7 +36,7 @@ const MobileNavigation = async () => {
           </SheetClose>
 
           <div className="flex flex-col gap-3">
-            {usernameOrId ? (
+            {userId ? (
               // <SheetClose asChild>
               <form
                 action={async () => {
@@ -64,10 +44,7 @@ const MobileNavigation = async () => {
                   await signOut();
                 }}
               >
-                <Button
-                  type="submit"
-                  className="base-medium w-fit !bg-transparent px-4 py-3"
-                >
+                <Button type="submit" className="base-medium w-fit !bg-transparent px-4 py-3">
                   <LogOut className="size-5 text-black dark:text-white" />
                   <span className="text-dark300_light900">Logout</span>
                 </Button>
