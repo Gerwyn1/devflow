@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 import Tag from "@/database/tag.model";
 import TagQuestion from "@/database/tag-question.model";
 
-export async function createQuestion(params: CreateQuestionParams): Promise<ActionResponse> {
+export async function createQuestion(params: CreateQuestionParams): Promise<ActionResponse<Question>> {
   const validationResult = await action({ params, schema: AskQuestionSchema, authorize: true });
 
   if (validationResult instanceof Error) {

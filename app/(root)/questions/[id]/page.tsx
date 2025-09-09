@@ -1,6 +1,5 @@
-const QuestionDetails = () => {
-  return (
-    <div>QuestionDetails</div>
-  )
-}
-export default QuestionDetails
+const QuestionDetails = async ({ params }: RouteParams) => {
+  const { id } = await params;
+  return <div>QuestionDetails {id}</div>;
+};
+export default QuestionDetails;

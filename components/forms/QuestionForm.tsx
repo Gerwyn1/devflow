@@ -3,15 +3,7 @@
 import { AskQuestionSchema } from "@/lib/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
 import { Input } from "../ui/input";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import TagCard from "../cards/TagCard";
@@ -20,6 +12,10 @@ import { useRef, useTransition } from "react";
 import { MDXEditorMethods } from "@mdxeditor/editor";
 import dynamic from "next/dynamic";
 import z from "zod";
+import { createQuestion } from "@/lib/actions/question.action";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import ROUTES from "@/constants/routes";
 
 const Editor = dynamic(() => import("@/components/editor"), {
   ssr: false,
@@ -31,6 +27,7 @@ interface Params {
 }
 
 const QuestionForm = ({ question, isEdit = false }: Params) => {
+  const router = useRouter();
   const editorRef = useRef<MDXEditorMethods>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -43,16 +40,16 @@ const QuestionForm = ({ question, isEdit = false }: Params) => {
     },
   });
 
-  const handleCreateQuestion = async (
-    data: z.infer<typeof AskQuestionSchema>
-  ) => {
-    console.log(data);
+  const handleCreateQuestion = async (data: z.infer<typeof AskQuestionSchema>) => {
+    startTransition(async () => {
+      const result = await createQuestion(data);
+      if (result.success) toast.success("Question created successfully");
+      if (result.data) router.push(ROUTES.QUESTION(result.data?._id));
+      else toast.error(result.error?.message || "Something went wrong");
+    });
   };
 
-  const handleInputKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    field: { value: string[] }
-  ) => {
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, field: { value: string[] }) => {
     if (e.key === "Enter") {
       e.preventDefault();
       const tagInput = e.currentTarget.value.trim();
@@ -88,10 +85,7 @@ const QuestionForm = ({ question, isEdit = false }: Params) => {
 
   return (
     <Form {...form}>
-      <form
-        className="flex w-full flex-col gap-10"
-        onSubmit={form.handleSubmit(handleCreateQuestion)}
-      >
+      <form className="flex w-full flex-col gap-10" onSubmit={form.handleSubmit(handleCreateQuestion)}>
         <FormField
           control={form.control}
           name="title"
@@ -107,8 +101,7 @@ const QuestionForm = ({ question, isEdit = false }: Params) => {
                 />
               </FormControl>
               <FormDescription className="body-regular mt-2.5 text-light-500">
-                Be specific and imagine you&apos;re asking a question to another
-                person.
+                Be specific and imagine you&apos;re asking a question to another person.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -120,19 +113,13 @@ const QuestionForm = ({ question, isEdit = false }: Params) => {
           render={({ field }) => (
             <FormItem className="flex w-full flex-col">
               <FormLabel className="paragraph-semibold text-dark400_light800">
-                Detailed explanation of your problem{" "}
-                <span className="text-primary-500">*</span>
+                Detailed explanation of your problem <span className="text-primary-500">*</span>
               </FormLabel>
               <FormControl>
-                <Editor
-                  value={field.value}
-                  editorRef={editorRef}
-                  fieldChange={field.onChange}
-                />
+                <Editor value={field.value} editorRef={editorRef} fieldChange={field.onChange} />
               </FormControl>
               <FormDescription className="body-regular mt-2.5 text-light-500">
-                Introduce the problem and expand on what you&apos;ve put in the
-                title.
+                Introduce the problem and expand on what you&apos;ve put in the title.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -171,19 +158,14 @@ const QuestionForm = ({ question, isEdit = false }: Params) => {
                 </div>
               </FormControl>
               <FormDescription className="body-regular mt-2.5 text-light-500">
-                Add up to 3 tags to describe what your question is about. You
-                need to press enter to add a tag.
+                Add up to 3 tags to describe what your question is about. You need to press enter to add a tag.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         <div className="mt-16 flex justify-end">
-          <Button
-            type="submit"
-            disabled={isPending}
-            className="primary-gradient w-fit !text-light-900"
-          >
+          <Button type="submit" disabled={isPending} className="primary-gradient w-fit !text-light-900">
             {isPending ? (
               <>
                 <ReloadIcon className="mr-2 size-4 animate-spin" />
