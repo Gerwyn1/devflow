@@ -35,9 +35,6 @@ const AuthForm = <T extends FieldValues>({ schema, defaultValues, formType, onSu
 
       router.push(ROUTES.HOME);
     } else {
-      console.log(result)
-      console.log("ERROR STATUS", result.status);
-      console.log("ERROR MESSAGE", result?.error?.message);
       toast.error(`Error ${result?.status}`, {
         description: result?.error?.message,
       });
@@ -67,7 +64,7 @@ const AuthForm = <T extends FieldValues>({ schema, defaultValues, formType, onSu
                     className="paragraph-regular background-light900_dark300 light-border-2 text-dark300_light700 no-focus min-h-12 rounded-1.5 border"
                   />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-red-500" />
               </FormItem>
             )}
           />
