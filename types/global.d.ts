@@ -53,3 +53,11 @@ interface RouteParams {
 interface GetQuestionParams {
   questionId: string;
 }
+
+interface PaginatedSearchParams {
+  page?: number;
+  pageSize?: number;
+  query?: string;
+  filter?: string;
+  sort?: string;
+}
