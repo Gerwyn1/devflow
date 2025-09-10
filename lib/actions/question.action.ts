@@ -136,9 +136,7 @@ export async function editQuestion(params: EditQuestionParams): Promise<ActionRe
   }
 }
 
-async function getQuestion(
-  params: GetQuestionParams
-): Promise<ActionResponse<Question>> {
+export async function getQuestion(params: GetQuestionParams): Promise<ActionResponse<Question>> {
   const validationResult = await action({
     params,
     schema: GetQuestionSchema,
@@ -150,9 +148,12 @@ async function getQuestion(
 
   const { questionId } = validationResult.params!;
 
+  try {
+    const question = await Question.findById(questionId).populate("tags");
+    if (!question) throw new NotFoundError("Question");
 
-  // return {}
+    return { success: true, data: JSON.parse(JSON.stringify(question)), status: 200 };
+  } catch (error) {
+    return handleError(error) as ErrorResponse;
+  }
 }
-
-
-

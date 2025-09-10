@@ -12,7 +12,7 @@ import { useRef, useTransition } from "react";
 import { MDXEditorMethods } from "@mdxeditor/editor";
 import dynamic from "next/dynamic";
 import z from "zod";
-import { createQuestion } from "@/lib/actions/question.action";
+import { createQuestion, editQuestion } from "@/lib/actions/question.action";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import ROUTES from "@/constants/routes";
@@ -34,14 +34,21 @@ const QuestionForm = ({ question, isEdit = false }: Params) => {
   const form = useForm<z.infer<typeof AskQuestionSchema>>({
     resolver: zodResolver(AskQuestionSchema),
     defaultValues: {
-      title: "",
-      content: "",
-      tags: [],
+      title: question?.title || "",
+      content: question?.content || "",
+      tags: question?.tags.map((tag) => tag.name) || [],
     },
   });
 
   const handleCreateQuestion = async (data: z.infer<typeof AskQuestionSchema>) => {
     startTransition(async () => {
+      if (isEdit && question) {
+        const result = await editQuestion({ questionId: question._id, ...data });
+        if (result.success) toast.success("Question updated successfully");
+        if (result.data) router.push(ROUTES.QUESTION(result.data?._id));
+        else toast.error(result.error?.message || "Something went wrong");
+        return;
+      }
       const result = await createQuestion(data);
       if (result.success) toast.success("Question created successfully");
       if (result.data) router.push(ROUTES.QUESTION(result.data?._id));
@@ -103,7 +110,7 @@ const QuestionForm = ({ question, isEdit = false }: Params) => {
               <FormDescription className="body-regular mt-2.5 text-light-500">
                 Be specific and imagine you&apos;re asking a question to another person.
               </FormDescription>
-              <FormMessage />
+              <FormMessage className="text-red-500"/>
             </FormItem>
           )}
         />
@@ -121,7 +128,7 @@ const QuestionForm = ({ question, isEdit = false }: Params) => {
               <FormDescription className="body-regular mt-2.5 text-light-500">
                 Introduce the problem and expand on what you&apos;ve put in the title.
               </FormDescription>
-              <FormMessage />
+              <FormMessage className="text-red-500"/>
             </FormItem>
           )}
         />
@@ -160,7 +167,7 @@ const QuestionForm = ({ question, isEdit = false }: Params) => {
               <FormDescription className="body-regular mt-2.5 text-light-500">
                 Add up to 3 tags to describe what your question is about. You need to press enter to add a tag.
               </FormDescription>
-              <FormMessage />
+              <FormMessage className="text-red-500"/>
             </FormItem>
           )}
         />
