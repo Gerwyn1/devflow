@@ -1,8 +1,9 @@
 import { FilterQuery } from "mongoose";
 import action from "../handlers/action";
 import handleError from "../handlers/error";
-import { PaginatedSearchParamsSchema } from "../validations";
-import { Tag } from "@/database";
+import { GetTagQuestionsSchema, PaginatedSearchParamsSchema } from "../validations";
+import { Question, Tag } from "@/database";
+import { NotFoundError } from "../http-errors";
 
 export const getTags = async (
   params: PaginatedSearchParams
@@ -65,3 +66,60 @@ export const getTags = async (
     return handleError(error) as ErrorResponse;
   }
 };
+
+export const GetTagQuestions = async (
+  params: GetTagQuestionsParams
+): Promise<ActionResponse<{ tag: Tag; questions: Question[]; isNext: boolean }>> => {
+  const validationResult = await action({
+    params,
+    schema: GetTagQuestionsSchema,
+  });
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { tagId, page = 1, pageSize = 10, query } = params;
+
+  const skip = (Number(page) - 1) * pageSize;
+  const limit = Number(pageSize);
+
+  try {
+    const tag = await Tag.findById(tagId);
+
+    if (!tag) throw new NotFoundError("Tag");
+
+    const filterQuery: FilterQuery<typeof Question> = {
+      tags: { $in: [tagId] },
+    };
+
+    if (query) {
+      filterQuery.title = { $regex: query, $options: "i" };
+    }
+
+    const totalQuestions = await Question.countDocuments(filterQuery);
+
+    const questions = await Question.find(filterQuery)
+      .select("_id title views answers upvotes downvotes author createdAt")
+      .populate([{ path: "author", select: "name image" }])
+      .populate([{ path: "tag", select: "name" }])
+      .skip(skip)
+      .limit(limit);
+
+    const isNext = totalQuestions > skip + questions.length;
+
+    return {
+      success: true,
+      data: {
+        tag: JSON.parse(JSON.stringify(tag)),
+        questions: JSON.parse(JSON.stringify(questions)),
+        isNext,
+      },
+    };
+  } catch (error) {
+    return handleError(error) as ErrorResponse;
+  }
+};
+
+//  Make a call to the `Questions` model and find questions that contain this tag
+// Make a call to the `TagQuestions` model and find all related questions together by finding different documents that have the tags mentioned in them
