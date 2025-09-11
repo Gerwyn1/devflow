@@ -19,6 +19,7 @@ import { getQuestion } from "@/lib/actions/question.action";
 // import { hasVoted } from "@/lib/actions/vote.action";
 import { formatNumber, getTimeStamp } from "@/lib/utils";
 import { Metadata } from "next";
+import Preview from "@/components/editor/Preview";
 
 const sampleQuestion = {
   id: "q123",
@@ -167,7 +168,7 @@ const QuestionDetails = async ({ params }: RouteParams) => {
           textStyles="small-regular text-dark400_light700"
         />
       </div>
-      <p>Preview Content</p>
+      <Preview content={content} />
       <div className="mt-8 flex flex-wrap gap-2">
         {tags.map((tag: Tag) => (
           <TagCard key={tag._id} _id={tag._id as string} name={tag.name} compact />
