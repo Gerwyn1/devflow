@@ -67,7 +67,7 @@ export const getTags = async (
   }
 };
 
-export const GetTagQuestions = async (
+export const getTagQuestions = async (
   params: GetTagQuestionsParams
 ): Promise<ActionResponse<{ tag: Tag; questions: Question[]; isNext: boolean }>> => {
   const validationResult = await action({
@@ -102,7 +102,7 @@ export const GetTagQuestions = async (
     const questions = await Question.find(filterQuery)
       .select("_id title views answers upvotes downvotes author createdAt")
       .populate([{ path: "author", select: "name image" }])
-      .populate([{ path: "tag", select: "name" }])
+      .populate([{ path: "tags", select: "name" }])
       .skip(skip)
       .limit(limit);
 

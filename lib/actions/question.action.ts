@@ -29,11 +29,10 @@ export async function createQuestion(params: CreateQuestionParams): Promise<Acti
 
     const tagIds: mongoose.Types.ObjectId[] = [];
     const tagQuestionDocuments = [];
-
     for (const tag of tags) {
       const existingTag = await Tag.findOneAndUpdate(
         {
-          name: { $regex: new RegExp(`^${tag}$`, "i") },
+          name: { $regex: `^${tag}$`, $options: "i" },
         },
         { $setOnInsert: { name: tag }, $inc: { questions: 1 } },
         { upsert: true, new: true, session }
@@ -117,6 +116,7 @@ export async function editQuestion(params: EditQuestionParams): Promise<ActionRe
       const tagIdsToRemove = tagsToRemove.map((tag: ITagDoc) => tag._id);
 
       await Tag.updateMany({ _id: { $in: tagIdsToRemove } }, { $inc: { questions: -1 } }, { session });
+      await Tag.deleteMany({ _id: { $in: tagIdsToRemove }, questions: 0 }, { session });
 
       await TagQuestion.deleteMany({ tag: { $in: tagIdsToRemove }, question: questionId }, { session });
 
