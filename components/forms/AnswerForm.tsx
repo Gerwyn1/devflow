@@ -12,10 +12,11 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-// import { toast } from "sonner";
+import { toast } from "sonner";
 // import { createAnswer } from "@/lib/actions/answer.action";
 // import { api } from "@/lib/api";
 import { AnswerSchema } from "@/lib/validations";
+import { createAnswer } from "@/lib/actions/answer.action";
 
 const Editor = dynamic(() => import("@/components/editor"), {
   ssr: false,
@@ -28,8 +29,7 @@ interface Props {
 }
 
 const AnswerForm = ({ questionId, questionTitle, questionContent }: Props) => {
-  // const [isAnswering, startAnsweringTransition] = useTransition();
-  const [isAnswering, setIsAnswering] = useState();
+  const [isAnswering, startAnsweringTransition] = useTransition();
   const [isAISubmitting, setIsAISubmitting] = useState(false);
   // const session = useSession();
 
@@ -42,7 +42,25 @@ const AnswerForm = ({ questionId, questionTitle, questionContent }: Props) => {
     },
   });
 
-  const handleSubmit = async (values: z.infer<typeof AnswerSchema>) => {};
+  const handleSubmit = async (values: z.infer<typeof AnswerSchema>) => {
+    startAnsweringTransition(async () => {
+      const result = await createAnswer({
+        questionId,
+        content: values.content,
+      });
+
+      if (result.success) {
+        form.reset();
+        toast.success("Success", {
+          description: "Your answer has been posted successfully",
+        });
+      } else {
+        toast.error(`Error ${result?.status}`, {
+          description: result?.error?.message,
+        });
+      }
+    });
+  };
 
   const generateAIAnswer = async () => {};
 
