@@ -14,8 +14,7 @@ import UserAvatar from "@/components/UserAvatar";
 import ROUTES from "@/constants/routes";
 // import { getAnswers } from "@/lib/actions/answer.action";
 // import { hasSavedQuestion } from "@/lib/actions/collection.action";
-import { getQuestion, incrementViews } from "@/lib/actions/question.action";
-// incrementViews
+import { getQuestion, getQuestions, incrementViews } from "@/lib/actions/question.action";
 // import { hasVoted } from "@/lib/actions/vote.action";
 import { formatNumber, getTimeStamp } from "@/lib/utils";
 import { Metadata } from "next";
@@ -106,12 +105,21 @@ import View from "../view";
 const QuestionDetails = async ({ params }: RouteParams) => {
   const { id } = await params;
 
-  // can only do parallel requests if one request doesn't depend on the other
+  // approach 1: place 'incrementViews' fn before 'getQuestion' fn
+  // approach 2: Parallel requests (Promise.all)
+  // approach 3: 'after' callback (Best method) (views won't update immediately but rendering is faster)
+
   // disadvantage: but can only fetch UI details after incrementing views
-  const [_, { success, data: question }] = await Promise.all([
-    await incrementViews({ questionId: id }),
-    await getQuestion({ questionId: id }),
-  ]);
+  // const [_, { success, data: question }] = await Promise.all([
+  //   await incrementViews({ questionId: id }),
+  //   await getQuestion({ questionId: id }),
+  // ]);
+
+  const { success, data: question } = await getQuestion({ questionId: id });
+
+  after(async () => {
+    await incrementViews({ questionId: id });
+  });
 
   if (!success || !question) return redirect("/404");
 
