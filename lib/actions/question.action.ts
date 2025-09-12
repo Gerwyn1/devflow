@@ -14,8 +14,6 @@ import mongoose, { FilterQuery } from "mongoose";
 import Tag, { ITagDoc } from "@/database/tag.model";
 import TagQuestion from "@/database/tag-question.model";
 import { NotFoundError, UnauthorizedError } from "../http-errors";
-import { revalidatePath } from "next/cache";
-import ROUTES from "@/constants/routes";
 
 export async function createQuestion(params: CreateQuestionParams): Promise<ActionResponse<Question>> {
   const validationResult = await action({ params, schema: AskQuestionSchema, authorize: true });
@@ -257,8 +255,6 @@ export async function incrementViews(params: IncrementViewsParams): Promise<Acti
     question.views += 1;
 
     await question.save();
-
-    revalidatePath(ROUTES.QUESTION(questionId));
 
     return { success: true, data: { views: question.views }, status: 200 };
   } catch (error) {
