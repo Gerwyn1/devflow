@@ -22,6 +22,7 @@ import { Preview } from "@/components/editor/Preview";
 import View from "../view";
 import AnswerForm from "@/components/forms/AnswerForm";
 import { getAnswers } from "@/lib/actions/answer.action";
+import AllAnswers from "@/components/answers/AllAnswers";
 
 // const sampleQuestion = {
 //   id: "q123",
@@ -131,8 +132,6 @@ const QuestionDetails = async ({ params }: RouteParams) => {
     error: answersError,
   } = await getAnswers({ questionId: id, page: 1, pageSize: 10, filter: "latest" });
 
-  console.log("ANSWERS", answersResult);
-
   const { author, createdAt, answers, views, tags, content, title } = question;
 
   return (
@@ -209,16 +208,16 @@ const QuestionDetails = async ({ params }: RouteParams) => {
         <AnswerForm questionId={question._id} questionTitle={question.title} questionContent={question.content} />
       </section>
 
-      {/* <section className="my-5">
+      <section className="my-5">
         <AllAnswers
-          page={Number(page) || 1}
+          // page={Number(page) || 1}
           isNext={answersResult?.isNext || false}
           data={answersResult?.answers}
           success={areAnswersLoaded}
           error={answersError}
           totalAnswers={answersResult?.totalAnswers || 0}
         />
-      </section> */}
+      </section>
     </>
   );
 };
