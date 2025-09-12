@@ -20,6 +20,7 @@ import { formatNumber, getTimeStamp } from "@/lib/utils";
 import { Metadata } from "next";
 import { Preview } from "@/components/editor/Preview";
 import View from "../view";
+import AnswerForm from "@/components/forms/AnswerForm";
 
 // const sampleQuestion = {
 //   id: "q123",
@@ -194,6 +195,10 @@ const QuestionDetails = async ({ params }: RouteParams) => {
         ))}
       </div>
 
+      <section className="my-5">
+        <AnswerForm questionId={question._id} questionTitle={question.title} questionContent={question.content} />
+      </section>
+
       {/* <section className="my-5">
         <AllAnswers
           page={Number(page) || 1}
@@ -204,6 +209,8 @@ const QuestionDetails = async ({ params }: RouteParams) => {
           totalAnswers={answersResult?.totalAnswers || 0}
         />
       </section>
+
+      
 
       <section className="my-5">
         <AnswerForm
