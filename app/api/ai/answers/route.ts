@@ -5,7 +5,6 @@ import { AIAnswerSchema } from "@/lib/validations";
 import { createGroq } from "@ai-sdk/groq";
 import { generateText } from "ai";
 import { NextResponse } from "next/server";
-import { text } from "stream/consumers";
 
 export async function POST(req: Request) {
   const { question, content, userAnswer } = await req.json();

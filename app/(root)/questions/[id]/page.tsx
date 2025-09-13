@@ -23,6 +23,7 @@ import View from "../view";
 import AnswerForm from "@/components/forms/AnswerForm";
 import { getAnswers } from "@/lib/actions/answer.action";
 import AllAnswers from "@/components/answers/AllAnswers";
+import Votes from "@/components/votes/Votes";
 
 // const sampleQuestion = {
 //   id: "q123",
@@ -153,7 +154,15 @@ const QuestionDetails = async ({ params }: RouteParams) => {
           </div>
 
           <div className="flex items-center justify-end gap-4">
-            <p>Votes</p>
+                  <Votes
+                // targetType="question"
+                upvotes={question.upvotes}
+                downvotes={question.downvotes}
+                hasupVoted={true}
+                hasdownVoted={false}
+                // targetId={question._id}
+                // hasVotedPromise={hasVotedPromise}
+              />
             {/* <Suspense fallback={<div>Loading...</div>}>
               <Votes
                 targetType="question"

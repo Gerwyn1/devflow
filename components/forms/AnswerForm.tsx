@@ -13,8 +13,6 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { toast } from "sonner";
-// import { createAnswer } from "@/lib/actions/answer.action";
-// import { api } from "@/lib/api";
 import { AnswerSchema } from "@/lib/validations";
 import { createAnswer } from "@/lib/actions/answer.action";
 import { api } from "@/lib/api";
@@ -69,7 +67,7 @@ const AnswerForm = ({ questionId, questionTitle, questionContent }: Props) => {
 
   const generateAIAnswer = async () => {
     if (session.status !== "authenticated") {
-      toast.info(`Please log in`, {
+      return toast.info(`Please log in`, {
         description: "You need to be logged in to use this feature",
       });
     }
