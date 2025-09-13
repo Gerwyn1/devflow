@@ -11,7 +11,7 @@ function isError(error: unknown): error is Error {
 }
 
 export async function fetchHandler<T>(url: string, options: FetchOptions = {}): Promise<ActionResponse<T>> {
-  const { timeout = 5000, headers: customHeaders = {}, ...restOptions } = options;
+  const { timeout = 100000, headers: customHeaders = {}, ...restOptions } = options;
 
   const controller = new AbortController();
 
