@@ -3,27 +3,22 @@ import { redirect } from "next/navigation";
 import { after } from "next/server";
 import React, { Suspense } from "react";
 
-// import AllAnswers from "@/components/answers/AllAnswers";
 import TagCard from "@/components/cards/TagCard";
-// import { Preview } from "@/components/editor/Preview";
-// import AnswerForm from "@/components/forms/AnswerForm";
 import Metric from "@/components/Metric";
 // import SaveQuestion from "@/components/questions/SaveQuestion";
 import UserAvatar from "@/components/UserAvatar";
-// import Votes from "@/components/votes/Votes";
 import ROUTES from "@/constants/routes";
-// import { getAnswers } from "@/lib/actions/answer.action";
 // import { hasSavedQuestion } from "@/lib/actions/collection.action";
-import { getQuestion, getQuestions, incrementViews } from "@/lib/actions/question.action";
-// import { hasVoted } from "@/lib/actions/vote.action";
+import { getQuestion, incrementViews } from "@/lib/actions/question.action";
 import { formatNumber, getTimeStamp } from "@/lib/utils";
 import { Metadata } from "next";
 import { Preview } from "@/components/editor/Preview";
-import View from "../view";
+// import View from "../view";
 import AnswerForm from "@/components/forms/AnswerForm";
 import { getAnswers } from "@/lib/actions/answer.action";
 import AllAnswers from "@/components/answers/AllAnswers";
 import Votes from "@/components/votes/Votes";
+import { hasVoted } from "@/lib/actions/vote.action";
 
 // const sampleQuestion = {
 //   id: "q123",
@@ -121,6 +116,8 @@ const QuestionDetails = async ({ params }: RouteParams) => {
 
   const { success, data: question } = await getQuestion({ questionId: id });
 
+  console.log(question)
+
   after(async () => {
     await incrementViews({ questionId: id });
   });
@@ -132,6 +129,8 @@ const QuestionDetails = async ({ params }: RouteParams) => {
     data: answersResult,
     error: answersError,
   } = await getAnswers({ questionId: id, page: 1, pageSize: 10, filter: "latest" });
+
+  const hasVotedPromise = hasVoted({ targetId: question._id, targetType: "question" });
 
   const { author, createdAt, answers, views, tags, content, title } = question;
 
@@ -154,24 +153,15 @@ const QuestionDetails = async ({ params }: RouteParams) => {
           </div>
 
           <div className="flex items-center justify-end gap-4">
-                  <Votes
-                // targetType="question"
-                upvotes={question.upvotes}
-                downvotes={question.downvotes}
-                hasupVoted={true}
-                hasdownVoted={false}
-                // targetId={question._id}
-                // hasVotedPromise={hasVotedPromise}
-              />
-            {/* <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div>Loading...</div>}>
               <Votes
-                targetType="question"
                 upvotes={question.upvotes}
                 downvotes={question.downvotes}
+                targetType="question"
                 targetId={question._id}
                 hasVotedPromise={hasVotedPromise}
               />
-            </Suspense> */}
+            </Suspense>
 
             {/* <Suspense fallback={<div>Loading...</div>}>
               <SaveQuestion

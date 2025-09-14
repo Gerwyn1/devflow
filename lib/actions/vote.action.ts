@@ -3,7 +3,7 @@
 import { Answer, Question, Vote } from "@/database";
 import action from "../handlers/action";
 import handleError from "../handlers/error";
-import { NotFoundError, UnauthorizedError } from "../http-errors";
+import { UnauthorizedError } from "../http-errors";
 import { CreateVoteSchema, HasVotedSchema, UpdateVoteCountSchema } from "../validations";
 import mongoose, { ClientSession } from "mongoose";
 import { revalidatePath } from "next/cache";
@@ -66,7 +66,6 @@ export async function createVote(params: CreateVoteParams): Promise<ActionRespon
       author: userId,
       actionId: targetId,
       actionType: targetType,
-      voteType,
     }).session(session);
 
     if (existingVote) {
@@ -109,7 +108,7 @@ export async function createVote(params: CreateVoteParams): Promise<ActionRespon
     await session.commitTransaction();
     session.endSession();
 
-    // revalidatePath(`/questions/${targetId}`);
+    revalidatePath(`/questions/${targetId}`);
 
     return { success: true };
   } catch (error) {
