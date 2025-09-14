@@ -7,7 +7,7 @@ import { CollectionBaseSchema, PaginatedSearchParamsSchema } from "../validation
 import { NotFoundError } from "../http-errors";
 import { revalidatePath } from "next/cache";
 import ROUTES from "@/constants/routes";
-import mongoose, { PipelineStage } from "mongoose";
+import mongoose, { FilterQuery, PipelineStage } from "mongoose";
 
 export async function toggleSaveQuestion(params: CollectionBaseParams): Promise<ActionResponse<{ saved: boolean }>> {
   const validationResult = await action({
@@ -95,7 +95,7 @@ export async function hasSavedQuestion(params: CollectionBaseParams): Promise<Ac
   }
 }
 
-export async function getSavedQuestion(
+export async function getSavedQuestions(
   params: PaginatedSearchParams
 ): Promise<ActionResponse<{ collection: Collection[]; isNext: boolean }>> {
   const validationResult = await action({
@@ -109,9 +109,10 @@ export async function getSavedQuestion(
 
   const userId = validationResult.session?.user?.id;
   const { page = 1, pageSize = 10, query, filter } = validationResult.params!;
-
   const skip = (Number(page) - 1) * pageSize;
   const limit = pageSize;
+
+  // const filterQuery: FilterQuery<typeof Collection> = { author: userId };
 
   const sortOptions: Record<string, Record<string, 1 | -1>> = {
     mostrecent: { "question.createdAt": -1 },
@@ -176,7 +177,7 @@ export async function getSavedQuestion(
 
     const questions = await Collection.aggregate(pipeline);
 
-    const isNext = totalCount.count > skip + questions.length;
+    const isNext = totalCount?.count > skip + questions.length;
 
     return {
       success: true,
