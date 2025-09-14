@@ -116,8 +116,6 @@ const QuestionDetails = async ({ params }: RouteParams) => {
 
   const { success, data: question } = await getQuestion({ questionId: id });
 
-  console.log(question)
-
   after(async () => {
     await incrementViews({ questionId: id });
   });

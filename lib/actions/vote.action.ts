@@ -8,7 +8,7 @@ import { CreateVoteSchema, HasVotedSchema, UpdateVoteCountSchema } from "../vali
 import mongoose, { ClientSession } from "mongoose";
 import { revalidatePath } from "next/cache";
 
-export async function updateVoteCount(params: UpdateVoteCountParams, session?: ClientSession): Promise<ActionResponse> {
+async function updateVoteCount(params: UpdateVoteCountParams, session?: ClientSession): Promise<ActionResponse> {
   const validationResult = await action({
     params,
     schema: UpdateVoteCountSchema,
@@ -24,17 +24,9 @@ export async function updateVoteCount(params: UpdateVoteCountParams, session?: C
   const voteField = voteType === "upvote" ? "upvotes" : "downvotes";
 
   try {
-    const result = await Model.findByIdAndUpdate(
-      targetId,
-      {
-        $inc: { [voteField]: change },
-      },
-      { new: true, session }
-    );
+    const result = await Model.findByIdAndUpdate(targetId, { $inc: { [voteField]: change } }, { new: true, session });
 
-    if (!result) {
-      return handleError(new Error("Failed to update vote count")) as ErrorResponse;
-    }
+    if (!result) throw new Error("Failed to update vote count");
 
     return { success: true };
   } catch (error) {
@@ -57,7 +49,7 @@ export async function createVote(params: CreateVoteParams): Promise<ActionRespon
 
   const userId = validationResult.session?.user?.id;
 
-  if (!userId) handleError(new UnauthorizedError("UserID cannot be found")) as ErrorResponse;
+  if (!userId) return handleError(new UnauthorizedError("UserID cannot be found")) as ErrorResponse;
 
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -71,23 +63,13 @@ export async function createVote(params: CreateVoteParams): Promise<ActionRespon
     if (existingVote) {
       if (existingVote.voteType === voteType) {
         // if user already voted with same vote type, remove vote
-        await Vote.deleteOne(
-          {
-            _id: existingVote._id,
-          },
-          { session }
-        );
-        updateVoteCount({ targetId, targetType, voteType, change: -1 }, session);
+        await Vote.deleteOne({ _id: existingVote._id }).session(session);
+        await updateVoteCount({ targetId, targetType, voteType, change: -1 }, session);
       } else {
-        // if user vote on a different type, update vote type
-        await Vote.findByIdAndUpdate(
-          existingVote._id,
-          {
-            voteType,
-          },
-          { new: true, session }
-        );
-        updateVoteCount({ targetId, targetType, voteType, change: 1 }, session);
+        // if user has already voted with a different type, update vote type
+        await Vote.findByIdAndUpdate(existingVote._id, { voteType }, { new: true, session });
+        await updateVoteCount({ targetId, targetType, voteType: existingVote.voteType, change: -1 }, session);
+        await updateVoteCount({ targetId, targetType, voteType, change: 1 }, session);
       }
     } else {
       // first time vote creation
@@ -102,7 +84,7 @@ export async function createVote(params: CreateVoteParams): Promise<ActionRespon
         ],
         { session }
       );
-      updateVoteCount({ targetId, targetType, voteType, change: 1 }, session);
+      await updateVoteCount({ targetId, targetType, voteType, change: 1 }, session);
     }
 
     await session.commitTransaction();
