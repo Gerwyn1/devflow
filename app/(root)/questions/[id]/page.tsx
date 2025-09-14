@@ -8,7 +8,7 @@ import Metric from "@/components/Metric";
 // import SaveQuestion from "@/components/questions/SaveQuestion";
 import UserAvatar from "@/components/UserAvatar";
 import ROUTES from "@/constants/routes";
-// import { hasSavedQuestion } from "@/lib/actions/collection.action";
+import { hasSavedQuestion } from "@/lib/actions/collection.action";
 import { getQuestion, incrementViews } from "@/lib/actions/question.action";
 import { formatNumber, getTimeStamp } from "@/lib/utils";
 import { Metadata } from "next";
@@ -20,7 +20,6 @@ import AllAnswers from "@/components/answers/AllAnswers";
 import Votes from "@/components/votes/Votes";
 import { hasVoted } from "@/lib/actions/vote.action";
 import SaveQuestion from "@/components/questions/SaveQuestion";
-import { toggleSaveQuestion } from "@/lib/actions/collection.action";
 
 // const sampleQuestion = {
 //   id: "q123",
@@ -131,7 +130,7 @@ const QuestionDetails = async ({ params }: RouteParams) => {
   } = await getAnswers({ questionId: id, page: 1, pageSize: 10, filter: "latest" });
 
   const hasVotedPromise = hasVoted({ targetId: question._id, targetType: "question" });
-  // const hasSavedQuestionPromise = () => ({ saved: false });
+  const hasSavedQuestionPromise = hasSavedQuestion({ questionId: question._id });
 
   const { author, createdAt, answers, views, tags, content, title } = question;
 
@@ -165,7 +164,7 @@ const QuestionDetails = async ({ params }: RouteParams) => {
             </Suspense>
 
             <Suspense fallback={<div>Loading...</div>}>
-              <SaveQuestion questionId={question._id} hasSavedQuestionPromise={() => {}} />
+              <SaveQuestion questionId={question._id} hasSavedQuestionPromise={hasSavedQuestionPromise} />
             </Suspense>
           </div>
         </div>

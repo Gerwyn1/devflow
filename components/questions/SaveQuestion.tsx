@@ -45,7 +45,7 @@ const SaveQuestion = ({
 
   return (
     <Image
-      src={false ? "/icons/star-filled.svg" : "/icons/star-red.svg"}
+      src={hasSaved ? "/icons/star-filled.svg" : "/icons/star-red.svg"}
       width={18}
       height={18}
       alt="save"
