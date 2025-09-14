@@ -19,6 +19,8 @@ import { getAnswers } from "@/lib/actions/answer.action";
 import AllAnswers from "@/components/answers/AllAnswers";
 import Votes from "@/components/votes/Votes";
 import { hasVoted } from "@/lib/actions/vote.action";
+import SaveQuestion from "@/components/questions/SaveQuestion";
+import { toggleSaveQuestion } from "@/lib/actions/collection.action";
 
 // const sampleQuestion = {
 //   id: "q123",
@@ -129,6 +131,7 @@ const QuestionDetails = async ({ params }: RouteParams) => {
   } = await getAnswers({ questionId: id, page: 1, pageSize: 10, filter: "latest" });
 
   const hasVotedPromise = hasVoted({ targetId: question._id, targetType: "question" });
+  // const hasSavedQuestionPromise = () => ({ saved: false });
 
   const { author, createdAt, answers, views, tags, content, title } = question;
 
@@ -161,12 +164,9 @@ const QuestionDetails = async ({ params }: RouteParams) => {
               />
             </Suspense>
 
-            {/* <Suspense fallback={<div>Loading...</div>}>
-              <SaveQuestion
-                questionId={question._id}
-                hasSavedQuestionPromise={hasSavedQuestionPromise}
-              />
-            </Suspense> */}
+            <Suspense fallback={<div>Loading...</div>}>
+              <SaveQuestion questionId={question._id} hasSavedQuestionPromise={() => {}} />
+            </Suspense>
           </div>
         </div>
         <h2 className="h2-semibold text-dark200_light900 mt-3.5 w-full">{title}</h2>
