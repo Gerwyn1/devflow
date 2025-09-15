@@ -1,7 +1,8 @@
-import { Answer } from "@/database";
 import DataRenderer from "../DataRenderer";
 import { EMPTY_ANSWERS } from "@/constants/states";
 import AnswerCard from "../cards/AnswerCard";
+import CommonFilter from "../filters/CommonFilter";
+import { AnswerFilters } from "@/constants/filters";
 
 interface Props extends ActionResponse<Answer[]> {
   // page: number;
@@ -16,10 +17,8 @@ const AllAnswers = ({ data, success, error, totalAnswers }: Props) => {
         <h3 className="primary-text-gradient">
           {totalAnswers} {totalAnswers === 1 ? "Answer" : "Answers"}
         </h3>
-        {/* <CommonFilter filters={AnswerFilters} otherClasses="sm:min-w-32" containerClasses="max-xs:w-full" /> */}
-        <p>Filters</p>
+        <CommonFilter filters={AnswerFilters} otherClasses="sm:min-w-32" containerClasses="max-xs:w-full" />
       </div>
-
       <DataRenderer
         data={data}
         error={error}

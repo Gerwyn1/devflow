@@ -1,9 +1,9 @@
 import QuestionCard from "@/components/cards/QuestionCard";
 import DataRenderer from "@/components/DataRenderer";
-// import CommonFilter from "@/components/filters/CommonFilter";
+import CommonFilter from "@/components/filters/CommonFilter";
 // import Pagination from "@/components/Pagination";
 import LocalSearch from "@/components/search/LocalSearch";
-// import { CollectionFilters } from "@/constants/filters";
+import { CollectionFilters } from "@/constants/filters";
 import ROUTES from "@/constants/routes";
 import { EMPTY_QUESTION } from "@/constants/states";
 import { getSavedQuestions } from "@/lib/actions/collection.action";
@@ -24,7 +24,7 @@ const Collections = async ({ searchParams }: SearchParams) => {
 
   const { collection, isNext } = data || {};
 
-  console.log(collection)
+  console.log(collection);
 
   return (
     <>
@@ -38,10 +38,7 @@ const Collections = async ({ searchParams }: SearchParams) => {
           otherClasses="flex-1"
         />
 
-        {/* <CommonFilter
-          filters={CollectionFilters}
-          otherClasses="min-h-[56px] sm:min-w-[170px]"
-        /> */}
+        <CommonFilter filters={CollectionFilters} otherClasses="min-h-[56px] sm:min-w-[170px]" />
       </div>
 
       <DataRenderer

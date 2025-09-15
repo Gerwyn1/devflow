@@ -102,8 +102,9 @@ import SaveQuestion from "@/components/questions/SaveQuestion";
 //   },
 // };
 
-const QuestionDetails = async ({ params }: RouteParams) => {
+const QuestionDetails = async ({ params, searchParams }: RouteParams) => {
   const { id } = await params;
+  const { page, pageSize, filter } = await searchParams;
 
   // approach 1: place 'incrementViews' fn before 'getQuestion' fn
   // approach 2: Parallel requests (Promise.all)
@@ -127,7 +128,7 @@ const QuestionDetails = async ({ params }: RouteParams) => {
     success: areAnswersLoaded,
     data: answersResult,
     error: answersError,
-  } = await getAnswers({ questionId: id, page: 1, pageSize: 10, filter: "latest" });
+  } = await getAnswers({ questionId: id, page: Number(page) || 1, pageSize: Number(pageSize) || 10, filter });
 
   const hasVotedPromise = hasVoted({ targetId: question._id, targetType: "question" });
   const hasSavedQuestionPromise = hasSavedQuestion({ questionId: question._id });
