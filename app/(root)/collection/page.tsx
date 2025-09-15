@@ -24,6 +24,8 @@ const Collections = async ({ searchParams }: SearchParams) => {
 
   const { collection, isNext } = data || {};
 
+  console.log(collection)
+
   return (
     <>
       <h1 className="h1-bold text-dark100_light900">Saved Questions</h1>

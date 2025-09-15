@@ -222,7 +222,7 @@ export async function getQuestions(params: PaginatedSearchParams): Promise<
       .populate("tags", "name")
       .populate("author", "name image")
       .lean()
-      .sort()
+      .sort(sortCriteria)
       .skip(skip)
       .limit(limit);
 
