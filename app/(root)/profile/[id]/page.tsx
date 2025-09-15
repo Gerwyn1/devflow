@@ -1,18 +1,18 @@
 import { auth } from "@/auth";
 import ProfileLink from "@/components/user/ProfileLink";
 import UserAvatar from "@/components/UserAvatar";
-import { getUser, getUserQuestions } from "@/lib/actions/user.action";
+import { getUser, getUserAnswers, getUserQuestions } from "@/lib/actions/user.action";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
 import Stats from "@/components/user/Stats";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DataRenderer from "@/components/DataRenderer";
 import Pagination from "@/components/Pagination";
 import QuestionCard from "@/components/cards/QuestionCard";
 import AnswerCard from "@/components/cards/AnswerCard";
-import { EMPTY_QUESTION } from "@/constants/states";
+import { EMPTY_ANSWERS, EMPTY_QUESTION } from "@/constants/states";
 
 const Profile = async ({ params, searchParams }: RouteParams) => {
   const { id } = await params;
@@ -46,6 +46,18 @@ const Profile = async ({ params, searchParams }: RouteParams) => {
   });
 
   const { questions, isNext: hasMoreQuestions } = userQuestions!;
+
+  const {
+    success: userAnswersSuccess,
+    data: userAnswers,
+    error: userAnswersError,
+  } = await getUserAnswers({
+    userId: id,
+    page: Number(page) || 1,
+    pageSize: Number(pageSize) || 10,
+  });
+
+  const { answers, isNext: hasMoreAnswers } = userAnswers!;
 
   return (
     <>
@@ -95,11 +107,11 @@ const Profile = async ({ params, searchParams }: RouteParams) => {
       />
       <section className="mt-10 flex gap-10">
         <Tabs defaultValue="top-posts" className="flex-[2]">
-          <TabsList className="background-light800_dark400 min-h-[42px] p-1 w-fit rounded-lg items-center flex gap-1">
-            <TabsTrigger value="top-posts" className="tab rounded-sm p-2 cursor-pointer">
+          <TabsList className="background-light800_dark400 min-h-[42px] p-1 w-fit rounded-lg items-center flex">
+            <TabsTrigger value="top-posts" className="tab cursor-pointer">
               Top Posts
             </TabsTrigger>
-            <TabsTrigger value="answers" className="tab rounded-sm p-2 cursor-pointer">
+            <TabsTrigger value="answers" className="tab cursor-pointer">
               Answers
             </TabsTrigger>
           </TabsList>
@@ -124,8 +136,7 @@ const Profile = async ({ params, searchParams }: RouteParams) => {
             <Pagination page={page} isNext={hasMoreQuestions || false} />
           </TabsContent>
           <TabsContent value="answers" className="flex w-full flex-col gap-6">
-            List of Answers
-            {/* <DataRenderer
+            <DataRenderer
               success={userAnswersSuccess}
               error={userAnswersError}
               data={answers}
@@ -139,13 +150,13 @@ const Profile = async ({ params, searchParams }: RouteParams) => {
                       content={answer.content.slice(0, 270)}
                       containerClasses="card-wrapper rounded-[10px] px-7 py-9 sm:px-11"
                       showReadMore
-                      showActionBtns={loggedInUser?.user?.id === answer.author._id}
+                      // showActionBtns={loggedInUser?.user?.id === answer.author._id}
                     />
                   ))}
                 </div>
               )}
-            /> */}
-            {/* <Pagination page={page} isNext={hasMoreAnswers || false} /> */}
+            />
+            <Pagination page={page} isNext={hasMoreAnswers || false} />
           </TabsContent>
         </Tabs>
         <div className="flex w-full min-w-[250px] flex-1 flex-col max-lg:hidden">
