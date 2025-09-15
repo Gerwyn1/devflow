@@ -112,8 +112,6 @@ export async function getSavedQuestions(
   const skip = (Number(page) - 1) * pageSize;
   const limit = pageSize;
 
-  // const filterQuery: FilterQuery<typeof Collection> = { author: userId };
-
   const sortOptions: Record<string, Record<string, 1 | -1>> = {
     mostrecent: { "question.createdAt": -1 },
     oldest: { "question.createdAt": 1 },

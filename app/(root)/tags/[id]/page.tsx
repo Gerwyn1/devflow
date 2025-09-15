@@ -1,5 +1,6 @@
 import QuestionCard from "@/components/cards/QuestionCard";
 import DataRenderer from "@/components/DataRenderer";
+import Pagination from "@/components/Pagination";
 
 // import Pagination from "@/components/Pagination";
 import LocalSearch from "@/components/search/LocalSearch";
@@ -49,8 +50,7 @@ const Page = async ({ params, searchParams }: RouteParams) => {
           </div>
         )}
       />
-
-      {/* <Pagination page={page} isNext={isNext || false} /> */}
+      <Pagination page={page} isNext={isNext || false} />
     </>
   );
 };

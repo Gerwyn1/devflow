@@ -43,13 +43,7 @@ const RightSidebar = async () => {
               className="flex cursor-pointer items-center justify-between gap-7"
             >
               <p className="body-medium text-dark500_light700">{title}</p>
-              <Image
-                src="/icons/chevron-right.svg"
-                alt="Chevron"
-                width={20}
-                height={20}
-                className="invert-colors"
-              />
+              <Image src="/icons/chevron-right.svg" alt="Chevron" width={20} height={20} className="invert-colors" />
             </Link>
           ))}
         </div>
@@ -91,14 +85,9 @@ const RightSidebar = async () => {
       <div className="mt-16 ">
         <h3 className="h3-bold text-dark200_light900">Popular Tags</h3>
         {popularTags.map(({ _id, name, questions }) => (
-          <TagCard
-            key={_id}
-            _id={_id}
-            name={name}
-            questions={questions}
-            showCount
-            compact
-          />
+          <div className="mt-3">
+            <TagCard key={_id} _id={_id} name={name} questions={questions} showCount compact />
+          </div>
         ))}
         {/* <DataRenderer
           data={tags}

@@ -1,6 +1,7 @@
 import QuestionCard from "@/components/cards/QuestionCard";
 import DataRenderer from "@/components/DataRenderer";
 import CommonFilter from "@/components/filters/CommonFilter";
+import Pagination from "@/components/Pagination";
 // import Pagination from "@/components/Pagination";
 import LocalSearch from "@/components/search/LocalSearch";
 import { CollectionFilters } from "@/constants/filters";
@@ -23,8 +24,6 @@ const Collections = async ({ searchParams }: SearchParams) => {
   });
 
   const { collection, isNext } = data || {};
-
-  console.log(collection);
 
   return (
     <>
@@ -55,7 +54,7 @@ const Collections = async ({ searchParams }: SearchParams) => {
         )}
       />
 
-      {/* <Pagination page={page} isNext={isNext || false} /> */}
+      <Pagination page={page} isNext={isNext || false} />
     </>
   );
 };
