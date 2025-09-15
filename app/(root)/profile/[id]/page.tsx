@@ -6,6 +6,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
+import Stats from "@/components/user/Stats";
 
 const Profile = async ({ params }: RouteParams) => {
   const { id } = await params;
@@ -62,12 +63,19 @@ const Profile = async ({ params }: RouteParams) => {
             </Link>
           )}
         </div>
-        {/* <Stats
-          totalQuestions={userStats?.totalQuestions || 0}
-          totalAnswers={userStats?.totalAnswers || 0}
-          badges={userStats?.badges || { GOLD: 0, SILVER: 0, BRONZE: 0 }}
-          reputationPoints={user.reputation || 0}
-        /> */}
+      </section>
+      <Stats
+        // totalQuestions={userStats?.totalQuestions || 0}
+        // totalAnswers={userStats?.totalAnswers || 0}
+        // badges={userStats?.badges || { GOLD: 0, SILVER: 0, BRONZE: 0 }}
+        // reputationPoints={user.reputation || 0}
+        totalQuestions={totalQuestions}
+        totalAnswers={totalAnswers}
+        badges={{ GOLD: 0, SILVER: 0, BRONZE: 0 }}
+        reputationPoints={0}
+      />
+      <section className="mt-10 flex gap-10">
+        
       </section>
     </>
   );
