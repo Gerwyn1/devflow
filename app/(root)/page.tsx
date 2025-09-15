@@ -125,7 +125,6 @@ const Home = async ({ searchParams }: SearchParams) => {
           </div>
         )}
       />
-
       <Pagination page={page} isNext={isNext || false} />
       {/* {success ? (
         <div className="mt-10 flex w-full flex-col gap-6">

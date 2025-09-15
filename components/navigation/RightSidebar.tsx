@@ -3,8 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import TagCard from "../cards/TagCard";
-import { getHotQuestions, getTopTags } from "@/lib/actions/question.action";
+import { getHotQuestions } from "@/lib/actions/question.action";
 import DataRenderer from "../DataRenderer";
+import { getTopTags } from "@/lib/actions/tag.action";
 
 // const hotQuestions = [
 //   { _id: "1", title: "How to create a custom hook in React?" },
@@ -23,13 +24,12 @@ import DataRenderer from "../DataRenderer";
 // ];
 
 const RightSidebar = async () => {
-  // const [
-  //   { success, data: hotQuestions, error },
-  //   { success: tagSuccess, data: tags, error: tagError },
-  // ] = await Promise.all([getHotQuestions(), getTopTags()]);
+  // these don't depend on each other hence Promise.all works well here
+  const [{ success, data: hotQuestions, error }, { success: tagSuccess, data: tags, error: tagError }] =
+    await Promise.all([getHotQuestions(), getTopTags()]);
 
-  const { success, data: hotQuestions, error } = await getHotQuestions();
-  const { success: tagSuccess, data: tags, error: tagError } = await getTopTags();
+  // const { success, data: hotQuestions, error } = await getHotQuestions();
+  // const { success: tagSuccess, data: tags, error: tagError } = await getTopTags();
 
   return (
     <section className="pt-36 custom-scrollbar background-light900_dark200 light-border sticky right-0 top-0 flex h-screen w-[350px] flex-col gap-6 overflow-y-auto border-l p-6 shadow-light-300 dark:shadow-none max-xl:hidden">
