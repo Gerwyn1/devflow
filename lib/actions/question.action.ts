@@ -14,6 +14,8 @@ import mongoose, { FilterQuery } from "mongoose";
 import Tag, { ITagDoc } from "@/database/tag.model";
 import TagQuestion from "@/database/tag-question.model";
 import { NotFoundError, UnauthorizedError } from "../http-errors";
+import dbConnect from "../mongoose";
+import { skip } from "node:test";
 
 export async function createQuestion(params: CreateQuestionParams): Promise<ActionResponse<Question>> {
   const validationResult = await action({ params, schema: AskQuestionSchema, authorize: true });
@@ -257,6 +259,16 @@ export async function incrementViews(params: IncrementViewsParams): Promise<Acti
     await question.save();
 
     return { success: true, data: { views: question.views }, status: 200 };
+  } catch (error) {
+    return handleError(error) as ErrorResponse;
+  }
+}
+
+export async function getHotQuestions(): Promise<ActionResponse<Question[]>> {
+  try {
+    await dbConnect();
+    const questions = await Question.find().sort({ views: -1, upvotes: -1 }).limit(5);
+    return { success: true, data: JSON.parse(JSON.stringify(questions)), status: 200 };
   } catch (error) {
     return handleError(error) as ErrorResponse;
   }
