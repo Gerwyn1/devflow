@@ -161,7 +161,7 @@ const Profile = async ({ params, searchParams }: RouteParams) => {
                       content={answer.content.slice(0, 270)}
                       containerClasses="card-wrapper rounded-[10px] px-7 py-9 sm:px-11"
                       showReadMore
-                      // showActionBtns={loggedInUser?.user?.id === answer.author._id}
+                      showActionBtns={loggedInUser?.user?.id === answer.author._id}
                     />
                   ))}
                 </div>
