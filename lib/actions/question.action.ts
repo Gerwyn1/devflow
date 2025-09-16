@@ -5,6 +5,7 @@ import action from "../handlers/action";
 import handleError from "../handlers/error";
 import {
   AskQuestionSchema,
+  DeleteQuestionSchema,
   EditQuestionSchema,
   GetQuestionSchema,
   IncrementViewsSchema,
@@ -15,7 +16,8 @@ import Tag, { ITagDoc } from "@/database/tag.model";
 import TagQuestion from "@/database/tag-question.model";
 import { NotFoundError, UnauthorizedError } from "../http-errors";
 import dbConnect from "../mongoose";
-import { skip } from "node:test";
+import { Answer, Collection, Vote } from "@/database";
+import { revalidatePath } from "next/cache";
 
 export async function createQuestion(params: CreateQuestionParams): Promise<ActionResponse<Question>> {
   const validationResult = await action({ params, schema: AskQuestionSchema, authorize: true });
@@ -124,7 +126,7 @@ export async function editQuestion(params: EditQuestionParams): Promise<ActionRe
       const tagIdsToRemove = tagsToRemove.map((tag: ITagDoc) => tag._id);
 
       await Tag.updateMany({ _id: { $in: tagIdsToRemove } }, { $inc: { questions: -1 } }, { session });
-      await Tag.deleteMany({ _id: { $in: tagIdsToRemove }, questions: 0 }, { session });
+      // await Tag.deleteMany({ _id: { $in: tagIdsToRemove }, questions: 0 }, { session });
 
       await TagQuestion.deleteMany({ tag: { $in: tagIdsToRemove }, question: questionId }, { session });
 
@@ -204,17 +206,17 @@ export async function getQuestions(params: PaginatedSearchParams): Promise<
   // Filters
   switch (filter) {
     case "newest":
-      sortCriteria = { createdAt: -1 };
+      sortCriteria = { createdAt: -1, _id: 1 };
       break;
     case "unanswered":
       filterQuery.answers = 0;
-      sortCriteria = { createdAt: -1 };
+      sortCriteria = { createdAt: -1, _id: 1 };
       break;
     case "popular":
-      sortCriteria = { upvotes: -1 };
+      sortCriteria = { upvotes: -1, _id: 1 };
       break;
     default:
-      sortCriteria = { createdAt: -1 };
+      sortCriteria = { createdAt: -1, _id: 1 };
       break;
   }
 
@@ -274,3 +276,68 @@ export async function getHotQuestions(): Promise<ActionResponse<Question[]>> {
   }
 }
 
+export async function deleteQuestion(params: DeleteQuestionParams): Promise<ActionResponse> {
+  const validationResult = await action({
+    params,
+    schema: DeleteQuestionSchema,
+    authorize: true,
+  });
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { questionId } = validationResult.params!;
+  const { user } = validationResult.session!;
+
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+    const question = await Question.findById(questionId).session(session);
+    if (!question) throw new NotFoundError("Question");
+
+    if (user?.id !== question?.author.toString()) {
+      throw new UnauthorizedError("You are not authorized to delete this question");
+    }
+
+    // Delete references from collection
+    await Collection.deleteMany({ question: questionId }).session(session);
+
+    // Delete references from TagQuestion collection
+    await TagQuestion.deleteMany({ question: questionId }).session(session);
+
+    // For all tags of Question, find them and reduce their count
+    if (question.tags.length > 0) {
+      await Tag.updateMany({ _id: { $in: question.tags } }, { $inc: { questions: -1 } }, { session });
+    }
+
+    // Remove all votes of the question
+    await Vote.deleteMany({ actionId: questionId, actionType: "question" }).session(session);
+
+    // Remove all answers and their votes of the question
+    const answers = await Answer.find({ question: questionId }).session(session);
+
+    if (answers.length > 0) {
+      await Answer.deleteMany({ question: questionId }).session(session);
+      await Vote.deleteMany({ _id: { $in: answers.map((answer) => answer._id) } }).session(session);
+    }
+
+    // Delete question
+    await Question.findByIdAndDelete(questionId).session(session);
+
+    // Commit transaction
+    await session.commitTransaction();
+
+    // Revalidate to reflect immediate changes on UI
+    revalidatePath(`/profile/${user?.id}`);
+
+    return { success: true, status: 200 };
+  } catch (error) {
+    await session.abortTransaction();
+    return handleError(error) as ErrorResponse;
+  } finally {
+    await session.endSession();
+  }
+}

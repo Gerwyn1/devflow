@@ -16,6 +16,7 @@ import { toast } from "sonner";
 // import { deleteQuestion } from "@/lib/actions/question.action";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { deleteQuestion } from "@/lib/actions/question.action";
 
 interface Props {
   type: string;
@@ -28,14 +29,19 @@ const EditDeleteAction = ({ type, itemId }: Props) => {
   const handleEdit = async () => {
     router.push(`/questions/${itemId}/edit`);
   };
-  
+
   const handleDelete = async () => {
     if (type === "Question") {
       // Call API to delete question
+      const { success, error } = await deleteQuestion({ questionId: itemId });
 
-      toast.success("Question deleted", {
-        description: "Your question has been deleted successfully.",
-      });
+      if (success) {
+        toast.success("Question deleted", {
+          description: "Your question has been deleted successfully.",
+        });
+      } else {
+        toast.error(error?.message);
+      }
     } else if (type === "Answer") {
       // Call API to delete answer
 

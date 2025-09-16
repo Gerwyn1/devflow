@@ -33,19 +33,19 @@ export const getTags = async (
 
   switch (filter) {
     case "popular":
-      sortCriteria = { questions: -1 };
+      sortCriteria = { questions: -1 , _id : 1};
       break;
     case "recent":
-      sortCriteria = { createdAt: -1 };
+      sortCriteria = { createdAt: -1 , _id : 1};
       break;
     case "oldest":
-      sortCriteria = { createdAt: 1 };
+      sortCriteria = { createdAt: 1 , _id : 1};
       break;
     case "name":
       sortCriteria = { name: 1 };
       break;
     default:
-      sortCriteria = { questions: -1 };
+      sortCriteria = { questions: -1 , _id : 1};
       break;
   }
 

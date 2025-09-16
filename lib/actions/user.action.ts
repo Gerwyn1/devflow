@@ -37,17 +37,16 @@ export async function getUsers(
 
   switch (filter) {
     case "newest":
-      sortCriteria = { createdAt: -1 };
+      sortCriteria = { createdAt: -1, _id: 1 };
       break;
     case "oldest":
-      sortCriteria = { createdAt: 1 };
+      sortCriteria = { createdAt: 1, _id: 1 };
       break;
     case "popular":
-      sortCriteria = { reputation: -1 };
+      sortCriteria = { reputation: -1, _id: 1 };
       break;
-
     default:
-      sortCriteria = { createdAt: -1 };
+      sortCriteria = { createdAt: -1, _id: 1 };
       break;
   }
 

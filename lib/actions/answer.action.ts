@@ -79,16 +79,16 @@ export async function getAnswers(
 
   switch (filter) {
     case "latest":
-      sortCriteria = { createdAt: -1 };
+      sortCriteria = { createdAt: -1, _id: 1 };
       break;
     case "oldest":
-      sortCriteria = { createdAt: 1 };
+      sortCriteria = { createdAt: 1, _id: 1 };
       break;
     case "popular":
-      sortCriteria = { upvotes: -1 };
+      sortCriteria = { upvotes: -1, _id: 1 };
       break;
     default:
-      sortCriteria = { createdAt: -1 };
+      sortCriteria = { createdAt: -1, _id: 1 };
       break;
   }
 
