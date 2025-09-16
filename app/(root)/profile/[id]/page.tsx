@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import ProfileLink from "@/components/user/ProfileLink";
 import UserAvatar from "@/components/UserAvatar";
-import { getUser, getUserAnswers, getUserQuestions } from "@/lib/actions/user.action";
+import { getUser, getUserAnswers, getUserQuestions, getUserTopTags } from "@/lib/actions/user.action";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import dayjs from "dayjs";
@@ -12,7 +12,8 @@ import DataRenderer from "@/components/DataRenderer";
 import Pagination from "@/components/Pagination";
 import QuestionCard from "@/components/cards/QuestionCard";
 import AnswerCard from "@/components/cards/AnswerCard";
-import { EMPTY_ANSWERS, EMPTY_QUESTION } from "@/constants/states";
+import { EMPTY_ANSWERS, EMPTY_QUESTION, EMPTY_TAGS } from "@/constants/states";
+import TagCard from "@/components/cards/TagCard";
 
 const Profile = async ({ params, searchParams }: RouteParams) => {
   const { id } = await params;
@@ -58,6 +59,16 @@ const Profile = async ({ params, searchParams }: RouteParams) => {
   });
 
   const { answers, isNext: hasMoreAnswers } = userAnswers!;
+
+  const {
+    success: userTopTagsSuccess,
+    data: userTopTags,
+    error: userTopTagsError,
+  } = await getUserTopTags({
+    userId: id,
+  });
+
+  const { tags } = userTopTags!;
 
   return (
     <>
@@ -164,7 +175,7 @@ const Profile = async ({ params, searchParams }: RouteParams) => {
 
           <div className="mt-7 flex flex-col gap-4">
             <p>List of Tags</p>
-            {/* <DataRenderer
+            <DataRenderer
               success={userTopTagsSuccess}
               error={userTopTagsError}
               data={tags}
@@ -176,7 +187,7 @@ const Profile = async ({ params, searchParams }: RouteParams) => {
                   ))}
                 </div>
               )}
-            /> */}
+            />
           </div>
         </div>
       </section>
