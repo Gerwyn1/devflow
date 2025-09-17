@@ -18,6 +18,8 @@ import { NotFoundError, UnauthorizedError } from "../http-errors";
 import dbConnect from "../mongoose";
 import { Answer, Collection, Vote } from "@/database";
 import { revalidatePath } from "next/cache";
+import { createInteraction } from "./interaction.action";
+import { after } from "next/server";
 
 export async function createQuestion(params: CreateQuestionParams): Promise<ActionResponse<Question>> {
   const validationResult = await action({ params, schema: AskQuestionSchema, authorize: true });
@@ -58,6 +60,16 @@ export async function createQuestion(params: CreateQuestionParams): Promise<Acti
     await Question.findByIdAndUpdate(question._id, { $push: { tags: { $each: tagIds } } }, { session });
 
     await session.commitTransaction();
+
+    // log the interaction
+    after(async () => {
+      await createInteraction({
+        action: "post",
+        actionId: question._id.toString(),
+        actionTarget: "question",
+        authorId: userId as string,
+      });
+    });
 
     return { success: true, data: JSON.parse(JSON.stringify(question)), status: 201 };
   } catch (error) {

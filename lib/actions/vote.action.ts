@@ -7,6 +7,8 @@ import { UnauthorizedError } from "../http-errors";
 import { CreateVoteSchema, HasVotedSchema, UpdateVoteCountSchema } from "../validations";
 import mongoose, { ClientSession } from "mongoose";
 import { revalidatePath } from "next/cache";
+import { createInteraction } from "./interaction.action";
+import { after } from "next/server";
 
 async function updateVoteCount(params: UpdateVoteCountParams, session?: ClientSession): Promise<ActionResponse> {
   const validationResult = await action({
@@ -53,7 +55,13 @@ export async function createVote(params: CreateVoteParams): Promise<ActionRespon
 
   const session = await mongoose.startSession();
   session.startTransaction();
+
   try {
+    const Model = targetType === "question" ? Question : Answer;
+    const contentDoc = await Model.findById(targetId).session(session);
+    if (!contentDoc) throw new Error("Content not found");
+    const contentAuthorId = contentDoc.author.toString();
+
     const existingVote = await Vote.findOne({
       author: userId,
       actionId: targetId,
@@ -87,16 +95,25 @@ export async function createVote(params: CreateVoteParams): Promise<ActionRespon
       await updateVoteCount({ targetId, targetType, voteType, change: 1 }, session);
     }
 
-    await session.commitTransaction();
-    session.endSession();
+    // log the interaction
+    after(async () => {
+      await createInteraction({
+        action: voteType,
+        actionId: targetId,
+        actionTarget: targetType,
+        authorId: contentAuthorId,
+      });
+    });
 
+    await session.commitTransaction();
     revalidatePath(`/questions/${targetId}`);
 
     return { success: true };
   } catch (error) {
     await session.abortTransaction();
-    session.endSession();
     return handleError(error) as ErrorResponse;
+  } finally {
+    session.endSession();
   }
 }
 
