@@ -3,10 +3,10 @@
 import Answer, { IAnswerDoc } from "@/database/answer.model";
 import action from "../handlers/action";
 import handleError from "../handlers/error";
-import { AnswerServerSchema, GetAnswersSchema } from "../validations";
+import { AnswerServerSchema, DeleteAnswerSchema, GetAnswersSchema } from "../validations";
 import mongoose from "mongoose";
-import { Question } from "@/database";
-import { NotFoundError } from "../http-errors";
+import { Question, Vote } from "@/database";
+import { NotFoundError, UnauthorizedError } from "../http-errors";
 import { revalidatePath } from "next/cache";
 import ROUTES from "@/constants/routes";
 
@@ -113,5 +113,48 @@ export async function getAnswers(
     };
   } catch (error) {
     return handleError(error) as ErrorResponse;
+  }
+}
+
+export async function deleteAnswer(params: DeleteAnswerParams): Promise<ActionResponse> {
+  const validationResult = await action({
+    params,
+    schema: DeleteAnswerSchema,
+    authorize: true,
+  });
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { answerId } = validationResult.params!;
+  const { user } = validationResult.session!;
+
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+    const answer = await Answer.findById(answerId).session(session);
+
+    if (!answer) throw new NotFoundError("Answer");
+
+    if (user?.id !== answer.author.toString()) {
+      throw new UnauthorizedError("You are not authorized to delete this answer");
+    }
+
+    await Vote.deleteMany({ actionId: answerId, actionType: "answer" }).session(session);
+    await Question.findByIdAndUpdate(answer.question, { $inc: { answers: -1 } }, { session });
+    await Answer.findByIdAndDelete(answerId).session(session);
+
+    await session.commitTransaction();
+    revalidatePath(`/profile/${user?.id}`);
+
+    return { success: true, status: 200 };
+  } catch (error) {
+    await session.abortTransaction();
+    return handleError(error) as ErrorResponse;
+  } finally {
+    await session.endSession();
   }
 }
