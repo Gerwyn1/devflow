@@ -11,15 +11,16 @@ import {
   IncrementViewsSchema,
   PaginatedSearchParamsSchema,
 } from "../validations";
-import mongoose, { FilterQuery } from "mongoose";
+import mongoose, { FilterQuery, Types } from "mongoose";
 import Tag, { ITagDoc } from "@/database/tag.model";
 import TagQuestion from "@/database/tag-question.model";
 import { NotFoundError, UnauthorizedError } from "../http-errors";
 import dbConnect from "../mongoose";
-import { Answer, Collection, Vote } from "@/database";
+import { Answer, Collection, Interaction, Vote } from "@/database";
 import { revalidatePath } from "next/cache";
 import { createInteraction } from "./interaction.action";
 import { after } from "next/server";
+import { auth } from "@/auth";
 
 export async function createQuestion(params: CreateQuestionParams): Promise<ActionResponse<Question>> {
   const validationResult = await action({ params, schema: AskQuestionSchema, authorize: true });
@@ -207,7 +208,16 @@ export async function getQuestions(params: PaginatedSearchParams): Promise<
 
   const filterQuery: FilterQuery<typeof Question> = {};
 
-  if (filter === "recommended") return { success: true, data: { questions: [], isNext: false } };
+  if (filter === "recommended") {
+    const session = await auth();
+    const userId = session?.user?.id;
+    if (!userId) {
+      return { success: true, data: { questions: [], isNext: false } };
+    }
+
+    const recommended = await getRecommendedQuestions({ skip, limit, query, userId });
+    return { success: true, data: recommended };
+  }
 
   if (query) {
     filterQuery.$or = [{ title: { $regex: query, $options: "i" } }, { content: { $regex: query, $options: "i" } }];
@@ -352,4 +362,64 @@ export async function deleteQuestion(params: DeleteQuestionParams): Promise<Acti
   } finally {
     await session.endSession();
   }
+}
+
+export async function getRecommendedQuestions({ userId, query, skip, limit }: RecommendationParams) {
+  // const filterQuery: FilterQuery<typeof Question> = {};
+  // if (query) {
+  //   filterQuery.$or = [{ title: { $regex: query, $options: "i" } }, { content: { $regex: query, $options: "i" } }];
+  // }
+
+  const interactions = await Interaction.find({
+    user: new Types.ObjectId(userId),
+    actionType: "question",
+    action: { $in: ["view", "upvote", "bookmark", "post"] },
+  })
+    .sort({ createdAt: -1 })
+    .limit(50)
+    .lean();
+
+  const interactedQuestionIds = interactions.map((i) => i.actionId);
+
+  const interactedQuestions = await Question.find({
+    _id: { $in: interactedQuestionIds },
+  }).select("tags");
+
+  const allTags = interactedQuestions.flatMap((q) => q.tags.map((tag: Types.ObjectId) => tag.toString()));
+  const uniqueTagIds = [...new Set(allTags)];
+
+  const recommendedQuery: FilterQuery<typeof Question> = {
+    _id: { $nin: interactedQuestionIds },
+    author: { $ne: new Types.ObjectId(userId) },
+    tags: { $in: uniqueTagIds.map((id: string) => new Types.ObjectId(id)) },
+  };
+
+  if (query) {
+    recommendedQuery.$or = [{ title: { $regex: query, $options: "i" } }, { content: { $regex: query, $options: "i" } }];
+  }
+
+  // const interactedQuestionIds = await Interaction.distinct("actionId", {
+  //   user: new Types.ObjectId(userId),
+  //   actionType: "question",
+  //   action: { $in: ["view", "upvote", "bookmark", "post"] },
+  // });
+
+  // const uniqueTags = await Question.distinct("tags", { _id: { $in: interactedQuestionIds } });
+
+  // filterQuery.tags = { $in: uniqueTags }; // share any tag
+  // filterQuery._id = { $nin: interactedQuestionIds }; // exclude interacted
+  // filterQuery.author = { $ne: new Types.ObjectId(userId) }; // exclude own questions
+
+  const totalQuestions = await Question.countDocuments(recommendedQuery);
+  const questions = await Question.find(recommendedQuery)
+    .populate("tags", "name")
+    .populate("author", "name image")
+    .sort({ upvotes: -1, views: -1 })
+    .skip(skip)
+    .limit(limit)
+    .lean();
+
+  const isNext = totalQuestions > skip + questions.length;
+
+  return { questions: JSON.parse(JSON.stringify(questions)), isNext };
 }

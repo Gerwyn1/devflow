@@ -9,12 +9,12 @@ import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 
 const filters = [
-  { name: "React", value: "react" },
-  { name: "JavaScript", value: "javascript" },
-  // { name: "Newest", value: "newest" },
-  // { name: "Popular", value: "popular" },
-  // { name: "Unanswered", value: "unanswered" },
-  // { name: "Recommeded", value: "recommended" },
+  // { name: "React", value: "react" },
+  // { name: "JavaScript", value: "javascript" },
+  { name: "Newest", value: "newest" },
+  { name: "Popular", value: "popular" },
+  { name: "Unanswered", value: "unanswered" },
+  { name: "Recommended", value: "recommended" },
 ];
 
 const HomeFilter = () => {
