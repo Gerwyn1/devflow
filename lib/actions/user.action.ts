@@ -12,6 +12,7 @@ import {
 } from "../validations";
 import { Answer, Question, User } from "@/database";
 import { NotFoundError } from "../http-errors";
+import { assignBadges } from "../utils";
 
 export async function getUsers(
   params: PaginatedSearchParams
@@ -64,8 +65,6 @@ export async function getUsers(
 export async function getUser(params: GetUserParams): Promise<
   ActionResponse<{
     user: User;
-    totalQuestions: number;
-    totalAnswers: number;
   }>
 > {
   const validationResult = await action({ params, schema: GetUserSchema });
@@ -80,10 +79,11 @@ export async function getUser(params: GetUserParams): Promise<
     const user = await User.findById(userId);
     if (!user) throw new NotFoundError("User");
 
-    const totalQuestions = await Question.countDocuments({ author: userId });
-    const totalAnswers = await Answer.countDocuments({ author: userId });
+    const userStats = await getUserStats({ userId });
 
-    return { success: true, data: { user: JSON.parse(JSON.stringify(user)), totalQuestions, totalAnswers } };
+    console.log(userStats);
+
+    return { success: true, data: { user: JSON.parse(JSON.stringify(user)) } };
   } catch (error) {
     return handleError(error) as ErrorResponse;
   }
@@ -209,3 +209,161 @@ export async function getUserTopTags(params: GetUserTagsParams): Promise<
     return handleError(error) as ErrorResponse;
   }
 }
+
+export async function getUserStats(params: GetUserParams): Promise<
+  ActionResponse<{
+    badges: Badges;
+    totalQuestions: number;
+    totalAnswers: number;
+  }>
+> {
+  const validationResult = await action({ params, schema: GetUserSchema });
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { userId } = validationResult.params!;
+
+  try {
+    const pipeline = [
+      // Start with Question collection
+      { $match: { author: new Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: null,
+          totalQuestions: { $sum: 1 },
+          questionUpvotes: { $sum: "$upvotes" },
+          questionViews: { $sum: "$views" },
+        },
+      },
+      // Union with Answer collection
+      {
+        $unionWith: {
+          coll: "answers", // MongoDB collection name
+          pipeline: [
+            { $match: { author: new Types.ObjectId(userId) } },
+            {
+              $group: {
+                _id: null,
+                totalAnswers: { $sum: 1 },
+                answerUpvotes: { $sum: "$upvotes" },
+              },
+            },
+          ],
+        },
+      },
+      // Combine results from both collections
+      {
+        $group: {
+          _id: null,
+          questionUpvotes: { $sum: "$questionUpvotes" },
+          questionViews: { $sum: "$questionViews" },
+          answerUpvotes: { $sum: "$answerUpvotes" },
+          totalQuestions: { $sum: "$totalQuestions" },
+          totalAnswers: { $sum: "$totalAnswers" },
+        },
+      },
+    ];
+
+    const stats = (await Question.aggregate(pipeline))[0] || {};
+
+    const badges: Badges = assignBadges({
+      criteria: [
+        {
+          type: "QUESTION_COUNT",
+          count: stats?.totalQuestions,
+        },
+        {
+          type: "ANSWER_COUNT",
+          count: stats?.totalAnswers,
+        },
+        {
+          type: "QUESTION_UPVOTES",
+          count: stats?.questionUpvotes,
+        },
+        {
+          type: "ANSWER_UPVOTES",
+          count: stats?.answerUpvotes,
+        },
+        {
+          type: "TOTAL_VIEWS",
+          count: stats?.questionViews,
+        },
+      ],
+    });
+
+    return {
+      success: true,
+      data: {
+        totalQuestions: stats?.totalQuestions,
+        totalAnswers: stats?.totalAnswers,
+        badges,
+      },
+    };
+  } catch (error) {
+    return handleError(error) as ErrorResponse;
+  }
+}
+
+// Sequential Pipeline (1) (used by adrian)
+
+// const [questionStats] = await Question.aggregate([
+//   { $match: { author: new Types.ObjectId(userId) } },
+//   {
+//     $group: {
+//       _id: null,
+//       count: { $sum: 1 },
+//       upvotes: { $sum: "$upvotes" },
+//       views: { $sum: "$views" },
+//     },
+//   },
+// ]);
+
+// questionStats.count, .views, .upvotes
+
+// const [answerStats] = await Answer.aggregate([
+//   { $match: { author: new Types.ObjectId(userId) } },
+//   {
+//     $group: {
+//       _id: null,
+//       count: { $sum: 1 },
+//       upvotes: { $sum: "$upvotes" },
+//     },
+//   },
+// ]);
+
+// answerStats.count, .count, .upvotes
+
+// both aggregations in parallel (2) (single collection)
+
+// const pipeline: PipelineStage[] = [
+//   {
+//     $facet: {
+//       questionStats: [
+//         { $match: { author: new Types.ObjectId(userId) } },
+//         {
+//           $group: {
+//             _id: null,
+//             totalUpvotes: { $sum: "$upvotes" },
+//             totalViews: { $sum: "$views" },
+//           },
+//         },
+//       ],
+//       answerStats: [
+//         { $match: { author: new Types.ObjectId(userId) } },
+//         {
+//           $group: {
+//             _id: null,
+//             totalUpvotes: { $sum: "$upvotes" },
+//           },
+//         },
+//       ],
+//     },
+//   },
+// ];
+
+// const result = await Question.aggregate(pipeline);
+
+// const questionStats = result[0]?.questionStats[0] || { totalUpvotes: 0, totalViews: 0 };
+// const answerStats = result[0]?.answerStats[0] || { totalUpvotes: 0 };

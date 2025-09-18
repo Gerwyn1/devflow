@@ -27,6 +27,7 @@ interface Props {
 }
 
 const Stats = ({ totalQuestions, totalAnswers, badges, reputationPoints }: Props) => {
+
   return (
     <div className="mt-10">
       <h4 className="h3-semibold text-dark200_light900">

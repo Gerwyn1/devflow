@@ -7,7 +7,7 @@ import { CollectionBaseSchema, PaginatedSearchParamsSchema } from "../validation
 import { NotFoundError } from "../http-errors";
 import { revalidatePath } from "next/cache";
 import ROUTES from "@/constants/routes";
-import mongoose, { FilterQuery, PipelineStage } from "mongoose";
+import mongoose, { PipelineStage } from "mongoose";
 
 export async function toggleSaveQuestion(params: CollectionBaseParams): Promise<ActionResponse<{ saved: boolean }>> {
   const validationResult = await action({
