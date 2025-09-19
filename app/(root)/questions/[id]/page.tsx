@@ -102,6 +102,28 @@ import SaveQuestion from "@/components/questions/SaveQuestion";
 //   },
 // };
 
+export async function generateMetadata({ params }: RouteParams): Promise<Metadata> {
+  const { id } = await params;
+  const { success, data: question } = await getQuestion({ questionId: id });
+
+  if (!success || !question) {
+    return {
+      title: "Question not found",
+      description: "This question does not exist",
+    };
+  }
+
+  return {
+    title: question.title,
+    description: question.content.slice(0, 100),
+    twitter: {
+      card: "summary_large_image",
+      title: question.title,
+      description: question.content.slice(0, 100),
+    },
+  };
+}
+
 const QuestionDetails = async ({ params, searchParams }: RouteParams) => {
   const { id } = await params;
   const { page, pageSize, filter } = await searchParams;
