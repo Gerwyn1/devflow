@@ -25,13 +25,6 @@ export default [
     },
   },
   {
-    ignores: [
-      "components/ui//*",
-      ".next//",
-      "node_modules/**/",
-      "dist//*",
-      "out//*",
-      "next-env.d.ts",
-    ],
+    ignores: ["components/ui//*", ".next//", "node_modules/**/", "dist//*", "out//*", "next-env.d.ts"],
   },
 ];
