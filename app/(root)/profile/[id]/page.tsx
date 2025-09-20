@@ -98,7 +98,7 @@ const Profile = async ({ params, searchParams }: RouteParams) => {
             {user?.bio && <p className="paragraph-regular text-dark400_light800 mt-8">{user.bio}</p>}
           </div>
         </div>
-        <div className="flex justify-end max-sm:mb-5 max-sm:w-full sm:mt-3">
+        {/* <div className="flex justify-end max-sm:mb-5 max-sm:w-full sm:mt-3">
           {loggedInUser?.user?.id === id && (
             <Link href="/profile/edit">
               <Button className="paragraph-medium btn-secondary text-dark300_light900 min-h-12 min-w-44 px-4 py-3">
@@ -106,7 +106,7 @@ const Profile = async ({ params, searchParams }: RouteParams) => {
               </Button>
             </Link>
           )}
-        </div>
+        </div> */}
       </section>
       <Stats
         totalQuestions={userStats?.totalQuestions || 0}

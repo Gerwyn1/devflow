@@ -5,7 +5,6 @@ import React, { Suspense } from "react";
 
 import TagCard from "@/components/cards/TagCard";
 import Metric from "@/components/Metric";
-// import SaveQuestion from "@/components/questions/SaveQuestion";
 import UserAvatar from "@/components/UserAvatar";
 import ROUTES from "@/constants/routes";
 import { hasSavedQuestion } from "@/lib/actions/collection.action";
